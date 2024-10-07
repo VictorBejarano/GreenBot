@@ -1,6 +1,6 @@
 # Usar Nginx para servir archivos estáticos
 FROM nginx:alpine
-COPY ./dist/browser /usr/share/nginx/html
+COPY ./dist /usr/share/nginx/html
 
 # Exponer el puerto 80
 EXPOSE 80
