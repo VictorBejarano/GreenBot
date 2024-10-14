@@ -11,6 +11,9 @@ RUN pip install -r requirements.txt
 # Copiar el código fuente
 COPY . .
 
+# Instalar las dependencias
+RUN pip install flask RPi.GPIO
+
 # Exponer el puerto 5000 (Flask por defecto)
 EXPOSE 5000
 
