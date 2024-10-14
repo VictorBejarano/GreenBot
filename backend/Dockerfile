@@ -6,13 +6,19 @@ WORKDIR /app
 
 # Copiar archivos necesarios
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+
+# Instalar las dependencias
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    && pip install -r requirements.txt \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar RPi.GPIO
+RUN pip install RPi.GPIO
 
 # Copiar el código fuente
 COPY . .
-
-# Instalar las dependencias
-RUN pip install flask RPi.GPIO
 
 # Exponer el puerto 5000 (Flask por defecto)
 EXPOSE 5000
