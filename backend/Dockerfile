@@ -7,9 +7,11 @@ WORKDIR /app
 # Copiar archivos necesarios
 COPY requirements.txt requirements.txt
 
-# Instalar las dependencias
+# Instalar dependencias
 RUN apt-get update && apt-get install -y \
     python3-dev \
+    gcc \
+    libgpiod2 \
     && pip install -r requirements.txt \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
