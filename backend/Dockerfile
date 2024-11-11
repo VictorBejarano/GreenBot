@@ -4,17 +4,25 @@ FROM python:3.9-slim
 # Establecer el directorio de trabajo en /app
 WORKDIR /app
 
-# Copiar archivos necesarios
-COPY requirements.txt requirements.txt
-
-# Instalar dependencias
+# Instalar git y otras dependencias necesarias
 RUN apt-get update && apt-get install -y \
+    git \
     python3-dev \
     gcc \
     libgpiod2 \
-    && pip install -r requirements.txt \
+    libbluetooth-dev \
+    bluetooth \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Copiar archivos necesarios
+COPY requirements.txt requirements.txt
+
+# Instalar dependencias desde requirements.txt
+RUN pip install -r requirements.txt
+
+# Instalar PyBluez desde el repositorio de GitHub
+RUN pip install git+https://github.com/pybluez/pybluez.git#egg=pybluez
 
 # Instalar RPi.GPIO
 RUN pip install RPi.GPIO
