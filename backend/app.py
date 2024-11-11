@@ -2,7 +2,7 @@ import logging
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import bluetooth  # Importa pybluez para manejar conexiones Bluetooth
-import threading
+import eventlet
 import time
 
 # Configuración del logger
@@ -47,7 +47,7 @@ def bluetooth_data_stream(sock):
             logger.info(f"Dato recibido: {data}")
             socketio.emit('data_update', {'data': data})
             logger.info(f"Evento 'data_update' emitido con los datos: {data}")
-            time.sleep(5)  # Espera 5 segundos antes de enviar otro comando
+            eventlet.sleep(5)  # Espera 5 segundos antes de enviar otro comando, usando eventlet.sleep
     except bluetooth.btcommon.BluetoothError as e:
         logger.error(f"Error en la transmisión de Bluetooth: {e}")
 
@@ -64,7 +64,8 @@ def handle_connect():
 def handle_bluetooth_stream(data):
     sock = connect_to_bluetooth()
     if sock:
-        threading.Thread(target=bluetooth_data_stream, args=(sock,), daemon=True).start()
+        # En lugar de usar threading, usamos eventlet para ejecutar la función en segundo plano
+        socketio.start_background_task(bluetooth_data_stream, sock)
         emit('message', {'data': 'Iniciando transmisión de datos Bluetooth'})
     else:
         emit('message', {'data': 'No se pudo conectar al dispositivo Bluetooth'})

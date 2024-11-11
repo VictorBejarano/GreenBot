@@ -20,13 +20,20 @@ services:
     build: ./backend
     ports:
       - "5000:5000"
+    network_mode: "host"
     privileged: true
     depends_on:
       - influxdb
     environment:
+      - DBUS_SESSION_BUS_ADDRESS=/dev/null
       - INFLUXDB_TOKEN=your-influxdb-token
       - INFLUXDB_BUCKET=my-bucket
       - INFLUXDB_ORG=my-org
+    devices:
+      - "/dev/ttyAMA0:/dev/ttyAMA0"  
+      - "/dev/rfcomm0:/dev/rfcomm0"
+    volumes:
+      - /run/dbus:/run/dbus  
 
   frontend:
     build: ./frontend

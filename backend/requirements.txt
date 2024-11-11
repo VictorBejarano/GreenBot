@@ -1,2 +1,5 @@
 Flask
 influxdb-client
+pyserial
+flask-socketio
+eventlet
