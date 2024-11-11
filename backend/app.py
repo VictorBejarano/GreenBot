@@ -1,54 +1,73 @@
-# from flask import Flask, jsonify, request
-# from influxdb_client import InfluxDBClient
+import logging
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+import bluetooth  # Importa pybluez para manejar conexiones Bluetooth
+import threading
+import time
 
-# app = Flask(__name__)
-
-# # Configuración de InfluxDB
-# token = "your-influxdb-token"
-# org = "your-org"
-# bucket = "your-bucket"
-# url = "http://influxdb:8086"
-
-# client = InfluxDBClient(url=url, token=token, org=org)
-# query_api = client.query_api()
-
-# @app.route('/data', methods=['GET'])
-# def get_data():
-#     query = '{"response": "Hi"}'
-    
-#     return jsonify(query), 200
-
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port=5000)
-
-from flask import Flask, jsonify, request
-import RPi.GPIO as GPIO
+# Configuración del logger
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+socketio = SocketIO(app, cors_allowed_origins="*", ping_interval=10, ping_timeout=20)  # Permitir todos los orígenes
 
-# Configuración del pin
-LED_PIN = 18  # Cambia esto al número de pin GPIO que estés utilizando
-GPIO.setmode(GPIO.BCM)  # Usa la numeración BCM
-GPIO.setup(LED_PIN, GPIO.OUT)  # Configura el pin como salida
+# Función para agregar encabezados CORS
+@app.after_request
+def after_request(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    return response
 
-@app.route('/led', methods=['POST'])
-def control_led():
-    data = request.get_json()
-    action = data.get('action')
+# Dirección MAC y puerto del dispositivo Bluetooth
+HC05_MAC = "20:16:04:19:08:81"  # Cambia a la dirección MAC de tu HC-05
+PORT = 1
 
-    if action == 'on':
-        GPIO.output(LED_PIN, GPIO.HIGH)  # Enciende el LED
-        return jsonify({'status': 'LED encendido'}), 200
-    elif action == 'off':
-        GPIO.output(LED_PIN, GPIO.LOW)  # Apaga el LED
-        return jsonify({'status': 'LED apagado'}), 200
+# Conectar al dispositivo Bluetooth
+def connect_to_bluetooth():
+    try:
+        sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        sock.connect((HC05_MAC, PORT))
+        logger.info(f"Conectado a {HC05_MAC}")
+        return sock
+    except bluetooth.BluetoothError as e:
+        logger.error(f"No se pudo conectar al dispositivo Bluetooth: {e}")
+        return None
+
+# Envía comandos periódicos al Arduino y lee la respuesta
+def bluetooth_data_stream(sock):
+    try:
+        while True:
+            comando = "LEER"  # Comando que se envía al Arduino
+            sock.send(comando)
+            logger.info(f"Comando enviado: {comando}")
+            data = sock.recv(1024).decode("utf-8").strip()  # Decodifica la respuesta del Arduino
+            logger.info(f"Dato recibido: {data}")
+            socketio.emit('data_update', {'data': data})
+            logger.info(f"Evento 'data_update' emitido con los datos: {data}")
+            time.sleep(5)  # Espera 5 segundos antes de enviar otro comando
+    except bluetooth.btcommon.BluetoothError as e:
+        logger.error(f"Error en la transmisión de Bluetooth: {e}")
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@socketio.on('connect')
+def handle_connect():
+    logger.info('Cliente conectado')
+    emit('message', {'data': 'Conexión establecida con el servidor'})
+
+@socketio.on('start_bluetooth_stream')
+def handle_bluetooth_stream(data):
+    sock = connect_to_bluetooth()
+    if sock:
+        threading.Thread(target=bluetooth_data_stream, args=(sock,), daemon=True).start()
+        emit('message', {'data': 'Iniciando transmisión de datos Bluetooth'})
     else:
-        return jsonify({'error': 'Acción no válida'}), 400
-
-@app.route('/shutdown', methods=['GET'])
-def shutdown():
-    GPIO.cleanup()  # Limpia la configuración de GPIO
-    return jsonify({'status': 'Apagando la Raspberry Pi'}), 200
+        emit('message', {'data': 'No se pudo conectar al dispositivo Bluetooth'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=False)
