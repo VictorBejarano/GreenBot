@@ -6,11 +6,11 @@ import { LiveUpdateChart } from "../../../@core/data/earning";
 import { SocketService } from "../socket.service";
 
 @Component({
-  selector: "ngx-temperature-card",
-  styleUrls: ["./temperature-card.component.scss"],
-  templateUrl: "./temperature-card.component.html",
+  selector: "ngx-soil-moisture-card",
+  styleUrls: ["./soil-moisture-card.component.scss"],
+  templateUrl: "./soil-moisture-card.component.html",
 })
-export class TemperatureCardComponent implements OnDestroy, OnInit {
+export class SoilMoistureCardComponent implements OnDestroy, OnInit {
   private alive = true;
 
   intervalSubscription: Subscription;
@@ -39,7 +39,7 @@ export class TemperatureCardComponent implements OnDestroy, OnInit {
       },
       liveChart: [],
     };
-    let dataStorage = localStorage.getItem("temperature_data");
+    let dataStorage = localStorage.getItem("soil_moisture_data");
     this.liveUpdateChartData = dataStorage
       ? JSON.parse(dataStorage)
       : Array.from({ length: 150 }, (a, b) => {
@@ -59,15 +59,15 @@ export class TemperatureCardComponent implements OnDestroy, OnInit {
       .subscribe((res) => {
         this.earningLiveUpdateCardData = {
           ...this.earningLiveUpdateCardData,
-          dailyIncome: res.data.temperature,
+          dailyIncome: res.data.soil_moisture,
         };
         let temporal = [...this.liveUpdateChartData];
         temporal.push({
-          value: [res.data.timestamp, res.data.temperature],
+          value: [res.data.timestamp, res.data.soil_moisture],
         });
         temporal.shift();
         this.liveUpdateChartData = temporal;
-        localStorage.setItem("temperature_data", JSON.stringify(temporal));
+        localStorage.setItem("soil_moisture_data", JSON.stringify(temporal));
         console.log(res);
       });
   }

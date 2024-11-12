@@ -17,7 +17,6 @@ import { MonitorModule } from './monitor/monitor.module';
     DashboardModule,
     ECommerceModule,
     MiscellaneousModule,
-
     MonitorModule,
   ],
   declarations: [

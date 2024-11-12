@@ -13,16 +13,16 @@ export class MonitorComponent implements OnInit, OnDestroy {
   constructor(private socket: Socket) {}
 
   ngOnInit() {
-    // Escuchar el evento 'data_update' del servidor Flask
-    this.socket
-      .fromEvent("data_update")
-      .subscribe((data) => {
-        console.log("Datos recibidos:", data);
-        this.data = data;
-      });
+    // // Escuchar el evento 'data_update' del servidor Flask
+    // this.socket
+    //   .fromEvent("data_update")
+    //   .subscribe((data) => {
+    //     console.log("Datos recibidos:", data);
+    //     this.data = data;
+    //   });
 
-    // Emitir un evento de ejemplo
-    this.socket.emit('start_bluetooth_stream', '');
+    // // Emitir un evento de ejemplo
+    // this.socket.emit('start_bluetooth_stream', '');
   }
 
   ngOnDestroy() {
