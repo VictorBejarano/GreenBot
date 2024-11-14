@@ -2860,7 +2860,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function HeaderComponent_nb_option_9_Template(rf, ctx) {
+function HeaderComponent_nb_option_8_Template(rf, ctx) {
   if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-option", 13);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
@@ -2873,7 +2873,7 @@ function HeaderComponent_nb_option_9_Template(rf, ctx) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate1"](" ", theme_r2.name, "");
   }
 }
-function HeaderComponent_nb_action_16_Template(rf, ctx) {
+function HeaderComponent_nb_action_15_Template(rf, ctx) {
   if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-action", 14);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](1, "nb-user", 15);
@@ -2899,26 +2899,27 @@ class HeaderComponent {
     this.destroy$ = new rxjs__WEBPACK_IMPORTED_MODULE_3__.Subject();
     this.userPictureOnly = false;
     this.themes = [{
-      value: 'default',
-      name: 'Light'
+      value: "default",
+      name: "Light"
     }, {
-      value: 'dark',
-      name: 'Dark'
+      value: "dark",
+      name: "Dark"
     }, {
-      value: 'cosmic',
-      name: 'Cosmic'
+      value: "cosmic",
+      name: "Cosmic"
     }, {
-      value: 'corporate',
-      name: 'Corporate'
+      value: "corporate",
+      name: "Corporate"
     }];
-    this.currentTheme = 'default';
+    this.currentTheme = "dark";
     this.userMenu = [{
-      title: 'Profile'
+      title: "Profile"
     }, {
-      title: 'Log out'
+      title: "Log out"
     }];
   }
   ngOnInit() {
+    this.changeTheme("dark");
     this.currentTheme = this.themeService.currentTheme;
     this.userService.getUsers().pipe((0,rxjs_operators__WEBPACK_IMPORTED_MODULE_4__.takeUntil)(this.destroy$)).subscribe(users => this.user = users.nick);
     const {
@@ -2927,7 +2928,9 @@ class HeaderComponent {
     this.themeService.onMediaQueryChange().pipe((0,rxjs_operators__WEBPACK_IMPORTED_MODULE_5__.map)(([, currentBreakpoint]) => currentBreakpoint.width < xl), (0,rxjs_operators__WEBPACK_IMPORTED_MODULE_4__.takeUntil)(this.destroy$)).subscribe(isLessThanXl => this.userPictureOnly = isLessThanXl);
     this.themeService.onThemeChange().pipe((0,rxjs_operators__WEBPACK_IMPORTED_MODULE_5__.map)(({
       name
-    }) => name), (0,rxjs_operators__WEBPACK_IMPORTED_MODULE_4__.takeUntil)(this.destroy$)).subscribe(themeName => this.currentTheme = themeName);
+    }) => name), (0,rxjs_operators__WEBPACK_IMPORTED_MODULE_4__.takeUntil)(this.destroy$)).subscribe(themeName => {
+      this.currentTheme = themeName;
+    });
   }
   ngOnDestroy() {
     this.destroy$.next();
@@ -2937,7 +2940,7 @@ class HeaderComponent {
     this.themeService.changeTheme(themeName);
   }
   toggleSidebar() {
-    this.sidebarService.toggle(true, 'menu-sidebar');
+    this.sidebarService.toggle(true, "menu-sidebar");
     this.layoutService.changeLayoutSize();
     return false;
   }
@@ -2951,7 +2954,7 @@ class HeaderComponent {
   static #_2 = this.ɵcmp = /*@__PURE__*/_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({
     type: HeaderComponent,
     selectors: [["ngx-header"]],
-    decls: 17,
+    decls: 16,
     vars: 4,
     consts: [[1, "header-container"], [1, "logo-container"], ["href", "#", 1, "sidebar-toggle", 3, "click"], ["icon", "menu-2-outline"], ["href", "#", 1, "logo", 3, "click"], ["status", "primary", 3, "selected", "selectedChange"], [3, "value", 4, "ngFor", "ngForOf"], ["size", "small"], [1, "control-item"], ["type", "rotate-layout"], ["icon", "email-outline", 1, "control-item"], ["icon", "bell-outline", 1, "control-item"], ["class", "user-action", 4, "nbIsGranted"], [3, "value"], [1, "user-action"], [3, "nbContextMenu", "onlyPicture", "name", "picture"]],
     template: function HeaderComponent_Template(rf, ctx) {
@@ -2966,25 +2969,24 @@ class HeaderComponent {
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function HeaderComponent_Template_a_click_4_listener() {
           return ctx.navigateHome();
         });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](5, "ngx-");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](6, "span");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](7, "admin");
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](5, "span");
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](6, "GreenBot");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](8, "nb-select", 5);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("selectedChange", function HeaderComponent_Template_nb_select_selectedChange_8_listener($event) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](7, "nb-select", 5);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("selectedChange", function HeaderComponent_Template_nb_select_selectedChange_7_listener($event) {
           return ctx.changeTheme($event);
         });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](9, HeaderComponent_nb_option_9_Template, 2, 2, "nb-option", 6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](8, HeaderComponent_nb_option_8_Template, 2, 2, "nb-option", 6);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](10, "div", 0)(11, "nb-actions", 7)(12, "nb-action", 8);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](13, "nb-search", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](9, "div", 0)(10, "nb-actions", 7)(11, "nb-action", 8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](12, "nb-search", 9);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](14, "nb-action", 10)(15, "nb-action", 11);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](16, HeaderComponent_nb_action_16_Template, 2, 4, "nb-action", 12);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](13, "nb-action", 10)(14, "nb-action", 11);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](15, HeaderComponent_nb_action_15_Template, 2, 4, "nb-action", 12);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()();
       }
       if (rf & 2) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](7);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("selected", ctx.currentTheme);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngForOf", ctx.themes);
