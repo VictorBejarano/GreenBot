@@ -30,6 +30,9 @@ DATA_FILE = "bluetooth_data.json"
 HC05_MAC = "00:22:11:30:CF:07"  # Cambia a la dirección MAC de tu HC-05
 PORT = 1
 
+# Variable global para el socket Bluetooth
+bluetooth_socket = None
+
 # Función para leer JSON completo usando delimitadores
 def read_valid_json(sock):
     buffer = ""
@@ -85,11 +88,12 @@ def get_last_150_data():
 
 # Conectar al dispositivo Bluetooth
 def connect_to_bluetooth():
+    global bluetooth_socket
     try:
-        sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-        sock.connect((HC05_MAC, PORT))
+        bluetooth_socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        bluetooth_socket.connect((HC05_MAC, PORT))
         logger.info(f"Conectado a {HC05_MAC}")
-        return sock
+        return bluetooth_socket
     except bluetooth.BluetoothError as e:
         logger.error(f"No se pudo conectar al dispositivo Bluetooth: {e}")
         return None
@@ -128,18 +132,60 @@ def handle_get_last_150_data(data):
 
 @socketio.on('start_bluetooth_stream')
 def handle_bluetooth_stream(data):
-    sock = connect_to_bluetooth()
-    if sock:
-        socketio.start_background_task(bluetooth_data_stream, sock)
+    global bluetooth_socket
+    if not bluetooth_socket:
+        bluetooth_socket = connect_to_bluetooth()
+    if bluetooth_socket:
+        socketio.start_background_task(bluetooth_data_stream, bluetooth_socket)
         emit('message', {'data': 'Iniciando transmisión de datos Bluetooth'})
     else:
         emit('message', {'data': 'No se pudo conectar al dispositivo Bluetooth'})
 
+# Función para manejar el envío de comandos en segundo plano
+def send_bluetooth_command(command):
+    global bluetooth_socket
+    if bluetooth_socket:
+        try:
+            bluetooth_socket.send(command)
+            logger.info(f"Comando enviado al Arduino: {command}")
+            return True
+        except bluetooth.BluetoothError as e:
+            logger.error(f"Error al enviar comando: {e}")
+            return False
+    else:
+        logger.warning("No hay conexión Bluetooth activa")
+        return False
+
+@socketio.on('activate_fan')
+def handle_activate_fan(data):
+    logger.info("Recibido evento: activate_fan")
+    socketio.start_background_task(send_bluetooth_command, "ACTIVAR_VENTILADOR")
+    emit('message', {'data': 'Intentando activar el ventilador...'})
+
+@socketio.on('desactivate_fan')
+def handle_desactivate_fan(data):
+    logger.info("Recibido evento: desactivate_fan")
+    socketio.start_background_task(send_bluetooth_command, "DESACTIVAR_VENTILADOR")
+    emit('message', {'data': 'Intentando desactivar el ventilador...'})
+
+@socketio.on('activate_luz')
+def handle_activate_luz(data):
+    logger.info("Recibido evento: activate_luz")
+    socketio.start_background_task(send_bluetooth_command, "ACTIVAR_LUZ")
+    emit('message', {'data': 'Intentando activar la luz...'})
+
+@socketio.on('desactivate_luz')
+def handle_desactivate_luz(data):
+    logger.info("Recibido evento: desactivate_luz")
+    socketio.start_background_task(send_bluetooth_command, "DESACTIVAR_LUZ")
+    emit('message', {'data': 'Intentando desactivar la luz...'})
+
+
 # Iniciar servidor
 if __name__ == '__main__':
-    sock = connect_to_bluetooth()
-    if sock:
-        socketio.start_background_task(bluetooth_data_stream, sock)
+    bluetooth_socket = connect_to_bluetooth()
+    if bluetooth_socket:
+        socketio.start_background_task(bluetooth_data_stream, bluetooth_socket)
         logger.info("Transmisión de datos Bluetooth iniciada automáticamente.")
     else:
         logger.error("No se pudo iniciar la transmisión de datos Bluetooth automáticamente.")
