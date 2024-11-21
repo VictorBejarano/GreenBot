@@ -39,15 +39,21 @@ export class TemperatureBCardComponent implements OnDestroy, OnInit {
       },
       liveChart: [],
     };
-    let dataStorage = localStorage.getItem("temperature_humidity_data");
-    this.liveUpdateChartData = dataStorage
-      ? JSON.parse(dataStorage)
-      : Array.from({ length: 150 }, (a, b) => {
-          return {
-            value: [b.toString(), 10],
-          };
-        });
-    this.startReceivingLiveData();
+    this.socketService.getAllData().subscribe((res) => {
+      let dataStorage = res.data.map(item => {
+        return {
+          value: [item.timestamp, item.temperature_humidity],
+        }
+      });
+      this.liveUpdateChartData = dataStorage
+        ? dataStorage
+        : Array.from({ length: 150 }, (a, b) => {
+            return {
+              value: [b.toString(), 10],
+            };
+          });
+      this.startReceivingLiveData();
+    });
   }
   startReceivingLiveData() {
     if (this.intervalSubscription) {
