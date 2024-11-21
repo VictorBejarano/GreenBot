@@ -13,8 +13,8 @@ import { HumidityCardComponent } from "./humidity-card/humidity-card.component";
 import { SoilMoistureCardComponent } from "./soil-moisture-card/soil-moisture-card.component";
 import { TemperatureBCardComponent } from "./temperature-b-card/temperature-b-card.component";
 import { QualityCardComponent } from "./quality-card/quality-card.component";
-const config: SocketIoConfig = { url: "http://192.168.10.3:5000", options: {} };
-// const config: SocketIoConfig = { url: "http://192.168.4.1:5000", options: {} };
+// const config: SocketIoConfig = { url: "http://192.168.10.3:5000", options: {} };
+const config: SocketIoConfig = { url: "http://192.168.4.1:5000", options: {} };
 
 @NgModule({
   imports: [
