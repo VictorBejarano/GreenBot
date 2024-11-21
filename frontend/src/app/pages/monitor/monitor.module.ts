@@ -26,8 +26,8 @@ import { QualityCardComponent } from "./quality-card/quality-card.component";
 import { FormsModule } from "@angular/forms";
 import { DashboardModule } from "../dashboard/dashboard.module";
 import { CsvService } from "./csv.service";
-const config: SocketIoConfig = { url: "http://192.168.10.3:5000", options: {} };
-// const config: SocketIoConfig = { url: "http://192.168.4.1:5000", options: {} };
+// const config: SocketIoConfig = { url: "http://192.168.10.3:5000", options: {} };
+const config: SocketIoConfig = { url: "http://192.168.4.1:5000", options: {} };
 
 @NgModule({
   imports: [
