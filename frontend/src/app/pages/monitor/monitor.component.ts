@@ -15,13 +15,13 @@ export class MonitorComponent {
       title: "Light",
       iconClass: "nb-lightbulb",
       type: "warning",
-      id: "fan",
+      id: "luz",
     },
     {
       title: "Fan",
       iconClass: "nb-loop",
       type: "success",
-      id: "luz",
+      id: "fan",
     },
   ];
   /**
