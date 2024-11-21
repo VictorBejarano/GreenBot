@@ -23,35 +23,31 @@ def after_request(response):
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
     return response
 
+# Archivo para guardar los datos
+DATA_FILE = "bluetooth_data.json"
+
 # Dirección MAC y puerto del dispositivo Bluetooth
-HC05_MAC = "20:16:04:19:08:81"  # Cambia a la dirección MAC de tu HC-05
+HC05_MAC = "00:22:11:30:CF:07"  # Cambia a la dirección MAC de tu HC-05
 PORT = 1
 
 # Función para leer JSON completo usando delimitadores
 def read_valid_json(sock):
-    buffer = ""  # Búfer para acumular los datos recibidos
+    buffer = ""
     while True:
         try:
-            # Lee los datos y acumúlalos en el búfer
             data = sock.recv(1024).decode("utf-8")
             buffer += data.strip()
-            
-            # Busca el mensaje completo delimitado por `<<` y `>>`
             start_idx = buffer.find("<<")
             end_idx = buffer.find(">>")
-            
-            # Verifica que el mensaje esté completo (tiene delimitadores de inicio y fin)
             if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
-                json_string = buffer[start_idx + 2:end_idx].strip()  # Extrae el JSON entre los delimitadores
-                
-                # Intenta convertir el string JSON a un diccionario
+                json_string = buffer[start_idx + 2:end_idx].strip()
                 try:
                     json_data = json.loads(json_string)
-                    buffer = buffer[end_idx + 2:]  # Elimina el mensaje procesado del búfer
+                    buffer = buffer[end_idx + 2:]
                     return json_data
                 except json.JSONDecodeError as e:
                     logger.error(f"Error al decodificar JSON: {e}")
-                    buffer = buffer[end_idx + 2:]  # Descarta el mensaje inválido y sigue leyendo
+                    buffer = buffer[end_idx + 2:]
             else:
                 logger.warning("Esperando mensaje completo...")
         except Exception as e:
@@ -60,9 +56,32 @@ def read_valid_json(sock):
 
 # Función para agregar la fecha y hora al JSON
 def add_timestamp_to_json(json_data):
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Formato de fecha y hora
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     json_data['timestamp'] = timestamp
     return json_data
+
+# Guardar datos en un archivo
+def save_data_to_file(data):
+    try:
+        with open(DATA_FILE, "a") as file:
+            file.write(json.dumps(data) + "\n")
+        logger.info(f"Dato guardado en el archivo: {data}")
+    except Exception as e:
+        logger.error(f"Error al guardar datos en el archivo: {e}")
+
+# Leer los últimos 150 datos del archivo
+def get_last_150_data():
+    try:
+        with open(DATA_FILE, "r") as file:
+            lines = file.readlines()
+            last_150 = lines[-150:] if len(lines) >= 150 else lines
+            return [json.loads(line.strip()) for line in last_150]
+    except FileNotFoundError:
+        logger.warning("El archivo de datos no existe aún.")
+        return []
+    except Exception as e:
+        logger.error(f"Error al leer los datos del archivo: {e}")
+        return []
 
 # Conectar al dispositivo Bluetooth
 def connect_to_bluetooth():
@@ -75,19 +94,20 @@ def connect_to_bluetooth():
         logger.error(f"No se pudo conectar al dispositivo Bluetooth: {e}")
         return None
 
-# Envía comandos periódicos al Arduino y lee la respuesta
+# Transmitir datos Bluetooth
 def bluetooth_data_stream(sock):
     try:
         while True:
-            comando = "LEER"  # Comando que se envía al Arduino
+            comando = "LEER"
             sock.send(comando)
             logger.info(f"Comando enviado: {comando}")
-            json_data = read_valid_json(sock) 
-            json_data_with_timestamp = add_timestamp_to_json(json_data)
-            logger.info(f"Dato recibido: {json_data_with_timestamp}")
-            socketio.emit('data_update', {'data': json_data_with_timestamp})
-            logger.info(f"Evento 'data_update' emitido con los datos: {json_data_with_timestamp}")
-            eventlet.sleep(5)  # Espera 5 segundos antes de enviar otro comando, usando eventlet.sleep
+            json_data = read_valid_json(sock)
+            if json_data:
+                json_data_with_timestamp = add_timestamp_to_json(json_data)
+                save_data_to_file(json_data_with_timestamp)
+                socketio.emit('data_update', {'data': json_data_with_timestamp})
+                logger.info(f"Dato transmitido: {json_data_with_timestamp}")
+            eventlet.sleep(5)
     except bluetooth.btcommon.BluetoothError as e:
         logger.error(f"Error en la transmisión de Bluetooth: {e}")
 
@@ -100,25 +120,28 @@ def handle_connect():
     logger.info('Cliente conectado')
     emit('message', {'data': 'Conexión establecida con el servidor'})
 
+@socketio.on('get_last_150_data')
+def handle_get_last_150_data(data):
+    last_150_data = get_last_150_data()
+    emit('last_150_data', {'data': last_150_data})
+    logger.info(f"Últimos 150 datos enviados al cliente.")
+
 @socketio.on('start_bluetooth_stream')
 def handle_bluetooth_stream(data):
     sock = connect_to_bluetooth()
     if sock:
-        # En lugar de usar threading, usamos eventlet para ejecutar la función en segundo plano
         socketio.start_background_task(bluetooth_data_stream, sock)
         emit('message', {'data': 'Iniciando transmisión de datos Bluetooth'})
     else:
         emit('message', {'data': 'No se pudo conectar al dispositivo Bluetooth'})
 
-# Conexión y transmisión automática al inicio del programa
+# Iniciar servidor
 if __name__ == '__main__':
     sock = connect_to_bluetooth()
     if sock:
-        # Inicia el hilo de transmisión de datos Bluetooth automáticamente
         socketio.start_background_task(bluetooth_data_stream, sock)
         logger.info("Transmisión de datos Bluetooth iniciada automáticamente.")
     else:
         logger.error("No se pudo iniciar la transmisión de datos Bluetooth automáticamente.")
 
-    # Inicia el servidor SocketIO
     socketio.run(app, host="0.0.0.0", port=5000, debug=False)
