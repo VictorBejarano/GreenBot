@@ -8,4 +8,10 @@ import { Socket } from "../../socket";
   templateUrl: "./monitor.component.html",
 })
 export class MonitorComponent {
+  /**
+   *
+   */
+  constructor(private service: SocketService) {
+    this.service.sendData("get_last_150_data", "");
+  }
 }

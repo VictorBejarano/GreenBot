@@ -15,4 +15,7 @@ export class SocketService {
   getDataUpdates(): Observable<any> {
     return this.socket.fromEvent("data_update");
   }
+  getAllData(): Observable<any> {
+    return this.socket.fromEvent("last_150_data");
+  }
 }
